@@ -54,7 +54,7 @@ int main()
     // Define frame
     std::vector<uint8_t> frame(cam.width() * cam.height());
     Mat img_gray(cam.height(), cam.width(), CV_8UC1, frame.data());
-    Mat img_rgb(cam.height(), cam.width(), CV_8UC1);
+    Mat img_rgb(cam.height(), cam.width(), CV_8UC3);
 
     //applyColorMap(img_gray, img_rgb, COLORMAP_JET);
     // Stream frames
