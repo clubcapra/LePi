@@ -53,9 +53,10 @@ int main()
     
     // Define frame
     std::vector<uint8_t> frame(cam.width() * cam.height());
-    Mat img(cam.height(), cam.width(), CV_8UC1, frame.data());
-    Mat img2(cam.height(), cam.width(), CV_8UC1);
-    cvtColor(img,img2,CV_GRAY2RGB);
+    Mat img_gray(cam.height(), cam.width(), CV_8UC1, frame.data());
+    Mat img_rgb(cam.height(), cam.width(), CV_8UC1);
+
+    //applyColorMap(img_gray, img_rgb, COLORMAP_JET);
     // Stream frames
     int frame_nb{0};
     auto start_time = std::chrono::system_clock::now();
@@ -64,11 +65,12 @@ int main()
         // Frame request
         if (cam.hasFrame()) {
             cam.getFrameU8(frame);
+            cvtColor(img_gray,img_rgb,CV_GRAY2RGB);
             ++frame_nb;
         }
         
         // Display
-        imshow("Lepton", img2);
+        imshow("Lepton", img_rgb);
         int key = waitKey(10);
         if (key == 27) { // Press Esc to exit
             break;
