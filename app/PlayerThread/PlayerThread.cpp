@@ -65,7 +65,8 @@ int main()
         // Frame request
         if (cam.hasFrame()) {
             cam.getFrameU8(frame);
-            cvtColor(img_gray,img_rgb,CV_GRAY2RGB);
+            applyColorMap(img_gray, img_rgb, COLORMAP_JET);
+            //cvtColor(img_gray,img_rgb,CV_GRAY2RGB);
             ++frame_nb;
         }
         
