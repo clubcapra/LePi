@@ -52,7 +52,7 @@ int main()
     std::vector<uint8_t> frame(cam.width() * cam.height());
     cv::Mat img(cam.height(), cam.width(), CV_8UC1, frame.data());
     cv::Mat img2;
-    cv::cvtColor(img,img2,cv::CV_GRAY2RGB)
+    cv::cvtColor(img,img2,cv::CV_GRAY2RGB);
     // Stream frames
     int frame_nb{0};
     auto start_time = std::chrono::system_clock::now();
