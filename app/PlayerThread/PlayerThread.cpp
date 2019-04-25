@@ -32,6 +32,7 @@
 // Third party
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 // C/C++
 #include <iostream>
@@ -50,7 +51,8 @@ int main()
     // Define frame
     std::vector<uint8_t> frame(cam.width() * cam.height());
     cv::Mat img(cam.height(), cam.width(), CV_8UC1, frame.data());
-    
+    cv::Mat img2;
+    cv::cvtColor(img,img2,cv::CV_GRAY2RGB)
     // Stream frames
     int frame_nb{0};
     auto start_time = std::chrono::system_clock::now();
@@ -63,7 +65,7 @@ int main()
         }
         
         // Display
-        cv::imshow("Lepton", img);
+        cv::imshow("Lepton", img2);
         int key = cv::waitKey(10);
         if (key == 27) { // Press Esc to exit
             break;
