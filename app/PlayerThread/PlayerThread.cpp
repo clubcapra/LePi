@@ -54,7 +54,7 @@ int main()
     // Define frame
     std::vector<uint8_t> frame(cam.width() * cam.height());
     Mat img(cam.height(), cam.width(), CV_8UC1, frame.data());
-    Mat img2;
+    Mat img2(cam.height(), cam.width(), CV_8UC1);
     cvtColor(img,img2,CV_GRAY2RGB);
     // Stream frames
     int frame_nb{0};
