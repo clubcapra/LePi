@@ -49,11 +49,10 @@ LEP_CAMERA_PORT_DESC_T _port;
 void leptonI2C_connect() {
     LEP_RESULT result = LEP_OpenPort(kI2CPortID, kI2CPortType, kI2CPortBaudRate, &_port);
     if (result == LEP_OK) {
-        std::cout << "Open I2C port: " <<_port.portID
+        std::cout << "Open I2C port: " << _port.portID
                   << ", with address " << static_cast<int>(_port.deviceAddress)
                   << std::endl;
-    }
-    else {
+    } else {
         std::cerr << "Unable to open I2C communication.";
         throw std::runtime_error("I2C connection failed");
     }
@@ -62,13 +61,12 @@ void leptonI2C_connect() {
 
 // Close Lepton I2C
 void leptonI2C_disconnect() {
-	LEP_RESULT result = LEP_ClosePort(&_port);
+    LEP_RESULT result = LEP_ClosePort(&_port);
     if (result == LEP_OK) {
-        std::cout << "Close I2C port: " <<_port.portID
+        std::cout << "Close I2C port: " << _port.portID
                   << ", with address " << static_cast<int>(_port.deviceAddress)
                   << std::endl;
-    }
-    else {
+    } else {
         std::cerr << "Unable to close I2C communication.";
         throw std::runtime_error("I2C close connection failed");
     }
@@ -105,14 +103,15 @@ bool leptonI2C_ShutterOpen() {
         return LEP_SetSysShutterPosition(&_port, position) == LEP_OK;
     }
     return false;
-} 
+}
+
 bool leptonI2C_ShutterClose() {
     if (_connected) {
         LEP_SYS_SHUTTER_POSITION_E position = LEP_SYS_SHUTTER_POSITION_CLOSED;
         return LEP_SetSysShutterPosition(&_port, position) == LEP_OK;
     }
     return false;
-} 
+}
 
 // Perform FFC
 bool leptonI2C_FFC() {
@@ -151,10 +150,9 @@ unsigned int leptonI2C_SensorNumber() {
     LEP_GetSysSceneRoi(&_port, &sceneRoi);
     if (sceneRoi.endCol == 79 && sceneRoi.endRow == 59) {
         return 2;
-    }
-    else if (sceneRoi.endCol == 159 && sceneRoi.endRow == 119) {
+    } else if (sceneRoi.endCol == 159 && sceneRoi.endRow == 119) {
         return 3;
-    }                        
+    }
     return 0;
 }
 
@@ -168,15 +166,13 @@ unsigned char spi_mode{SPI_MODE_3};
 unsigned char spi_bits_per_word{8};
 
 // Open SPI port
-void leptonSPI_OpenPort (int spi_device, uint32_t spi_speed)
-{
+void leptonSPI_OpenPort(int spi_device, uint32_t spi_speed) {
     int status_value{-1};
 
     // Select SPI device and open communication
     if (spi_device) {
         spi_fd = open(std::string("/dev/spidev0.1").c_str(), O_RDWR);
-    }
-    else {
+    } else {
         spi_fd = open(std::string("/dev/spidev0.0").c_str(), O_RDWR);
     }
 
@@ -191,42 +187,42 @@ void leptonSPI_OpenPort (int spi_device, uint32_t spi_speed)
     //SPI_MODE_2 (1,0)  CPOL=1 (Clock Idle high level), CPHA=0 (SDO transmit/change edge active to idle)
     //SPI_MODE_3 (1,1)  CPOL=1 (Clock Idle high level), CPHA=1 (SDO transmit/change edge idle to active)
     status_value = ioctl(spi_fd, SPI_IOC_WR_MODE, &spi_mode);
-    if(status_value < 0) {
+    if (status_value < 0) {
         std::cerr << "Could not set SPIMode (WR)...ioctl fail" << std::endl;
         throw std::runtime_error("SPI config failed.");
     }
 
     // Set SPI Mode RD
     status_value = ioctl(spi_fd, SPI_IOC_RD_MODE, &spi_mode);
-    if(status_value < 0) {
+    if (status_value < 0) {
         std::cerr << "Could not set SPIMode (RD)...ioctl fail" << std::endl;
         throw std::runtime_error("SPI config failed.");
     }
 
     // Set SPI bits per word WR
     status_value = ioctl(spi_fd, SPI_IOC_WR_BITS_PER_WORD, &spi_bits_per_word);
-    if(status_value < 0) {
+    if (status_value < 0) {
         std::cerr << "Could not set SPI bitsPerWord (WR)...ioctl fail" << std::endl;
         throw std::runtime_error("SPI config failed.");
     }
 
     // Set SPI bits per word Rd
     status_value = ioctl(spi_fd, SPI_IOC_RD_BITS_PER_WORD, &spi_bits_per_word);
-    if(status_value < 0) {
+    if (status_value < 0) {
         std::cerr << "Could not set SPI bitsPerWord(RD)...ioctl fail" << std::endl;
         throw std::runtime_error("SPI config failed.");
     }
 
     // Set SPI bus speed WR
     status_value = ioctl(spi_fd, SPI_IOC_WR_MAX_SPEED_HZ, &spi_speed);
-    if(status_value < 0) {
+    if (status_value < 0) {
         std::cerr << "Could not set SPI speed (WR)...ioctl fail" << std::endl;
         throw std::runtime_error("SPI config failed.");
     }
 
     // Set SPI bus speed RD
     status_value = ioctl(spi_fd, SPI_IOC_RD_MAX_SPEED_HZ, &spi_speed);
-    if(status_value < 0) {
+    if (status_value < 0) {
         std::cerr << "Could not set SPI speed (RD)...ioctl fail" << std::endl;
         throw std::runtime_error("SPI config failed.");
     }
@@ -238,13 +234,12 @@ void leptonSPI_OpenPort (int spi_device, uint32_t spi_speed)
 
 
 // Close SPI connection
-void leptonSPI_ClosePort(int spi_device)
-{
+void leptonSPI_ClosePort(int spi_device) {
     int status_value{-1};
 
     // Close connection
     status_value = close(spi_fd);
-    if(status_value < 0)  {
+    if (status_value < 0) {
         std::cerr << "Error - Could not close SPI device" << std::endl;
         throw std::runtime_error("Closing connection failed.");
     }

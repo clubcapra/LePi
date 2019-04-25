@@ -35,8 +35,7 @@
 
 
 // Open communication with Lepton
-bool LePi::OpenConnection()
-{
+bool LePi::OpenConnection() {
     // Open I2C
     try {
         leptonI2C_connect();
@@ -66,8 +65,7 @@ bool LePi::OpenConnection()
 }
 
 // Close communication with Lepton
-bool LePi::CloseConnection()
-{
+bool LePi::CloseConnection() {
     try {
         // Close SPI port
         leptonSPI_ClosePort(spi_port_);
@@ -119,8 +117,8 @@ bool LePi::ResetSPIConnection() {
 // Reboot sensor and reset connection
 bool LePi::RebootSensor() {
     leptonI2C_Reboot(); // This function can return a false value even when reboot 
-                        // succeed, due to the I2C read after reboot, avoid using 
-                        // the returned value for now
+    // succeed, due to the I2C read after reboot, avoid using
+    // the returned value for now
     bool result_close = CloseConnection();
     usleep(kLeptonRebootTime);
     bool result_open = OpenConnection();
@@ -128,33 +126,33 @@ bool LePi::RebootSensor() {
 }
 
 // Lepton convert frame from sensor to IR imageU8
-void LePi::LeptonUnpackFrame8 (uint8_t *frame) {
+void LePi::LeptonUnpackFrame8(uint8_t *frame) {
 
     // Prepare buffer pointers
-    const uint32_t frame_size{config_.segments_per_frame*config_.segment_size_uint16};
+    const uint32_t frame_size{config_.segments_per_frame * config_.segment_size_uint16};
     auto frame_u8 = reinterpret_cast<uint8_t *>(frame_buffer_.data());
 
     // Compute min and max
     uint16_t minValue = 65535;
     uint16_t maxValue = 0;
-    for(uint32_t i = 0; i < frame_size; i++) {
+    for (uint32_t i = 0; i < frame_size; i++) {
 
         // Skip the first 2 uint16_t's of every packet, they're 4 bytes header
-        if(i % config_.packet_size_uint16 < 2) {
+        if (i % config_.packet_size_uint16 < 2) {
             continue;
         }
 
         // Flip the MSB and LSB at the last second
-        uint8_t temp = frame_u8[i*2];
-        frame_u8[i*2] = frame_u8[i*2+1];
-        frame_u8[i*2+1] = temp;
+        uint8_t temp = frame_u8[i * 2];
+        frame_u8[i * 2] = frame_u8[i * 2 + 1];
+        frame_u8[i * 2 + 1] = temp;
 
         // Check min/max value
         uint16_t value = frame_buffer_[i];
-        if(value > maxValue) {
+        if (value > maxValue) {
             maxValue = value;
         }
-        if(value < minValue) {
+        if (value < minValue) {
             minValue = value;
         }
     }
@@ -163,10 +161,10 @@ void LePi::LeptonUnpackFrame8 (uint8_t *frame) {
     auto diff = static_cast<float>(maxValue - minValue);
     float scale = 255.f / diff;
     int idx = 0;
-    for(uint32_t i = 0; i < frame_size; i++) {
+    for (uint32_t i = 0; i < frame_size; i++) {
 
         // Skip the first 2 uint16_t's of every packet, they're 4 bytes header
-        if(i % config_.packet_size_uint16 < 2) {
+        if (i % config_.packet_size_uint16 < 2) {
             continue;
         }
 
@@ -175,41 +173,39 @@ void LePi::LeptonUnpackFrame8 (uint8_t *frame) {
 }
 
 // Lepton convert frame from sensor to IR imageU16
-void LePi::LeptonUnpackFrame16 (uint16_t *frame)
-{
+void LePi::LeptonUnpackFrame16(uint16_t *frame) {
     auto src = reinterpret_cast<uint8_t *>(frame_buffer_.data());
     auto dst = reinterpret_cast<uint8_t *>(frame);
     int idx = 0;
-    const uint32_t frame_size{config_.segments_per_frame*config_.segment_size};
-    for(uint32_t i = 0; i < frame_size; i+=2) {
+    const uint32_t frame_size{config_.segments_per_frame * config_.segment_size};
+    for (uint32_t i = 0; i < frame_size; i += 2) {
 
         // Skip the first 2 uint16_t's of every packet, they're 4 header bytes
-        if(i % config_.packet_size < 4) {
+        if (i % config_.packet_size < 4) {
             continue;
         }
 
         // Flip the MSB and LSB
-        dst[idx++] = src[i+1];
+        dst[idx++] = src[i + 1];
         dst[idx++] = src[i];
     }
 }
 
 // Lepton read segment from sensor
-int LePi::LeptonReadSegment(const int max_resets, uint8_t *data_buffer)
-{
+int LePi::LeptonReadSegment(const int max_resets, uint8_t *data_buffer) {
     int resets{-1};
     const int step{config_.packets_per_read};
     const int bytes_per_SPI_read{step * config_.packet_size};
 
-    for(int j = 0; j < config_.packets_per_segment; j+=step)
-    {
+    for (int j = 0; j < config_.packets_per_segment; j += step) {
         // Try to reach sync first
         if (j == 0) {
             uint8_t packetNumber{255};
             uint8_t discard_packet{0x0F};
-            while (packetNumber != 0 || discard_packet == 0x0F) { // while packet id is not 0, or the packet is a discard packet
+            while (packetNumber != 0 ||
+                   discard_packet == 0x0F) { // while packet id is not 0, or the packet is a discard packet
                 ++resets;
-                if(resets == max_resets) {
+                if (resets == max_resets) {
                     return resets;
                 }
 
@@ -223,7 +219,7 @@ int LePi::LeptonReadSegment(const int max_resets, uint8_t *data_buffer)
         }
 
         // Check reset counter
-        if(resets == max_resets) {
+        if (resets == max_resets) {
             return resets;
         }
 
@@ -263,8 +259,7 @@ int LePi::LeptonReadSegment(const int max_resets, uint8_t *data_buffer)
 }
 
 // Read frame from lepton sensor
-int LePi::LeptonReadFrame()
-{
+int LePi::LeptonReadFrame() {
     // Compute packet index for the packet containing the segment ID
     const int segmentId_packet_idx{config_.segment_number_packet_index * config_.packet_size};
 
@@ -273,10 +268,9 @@ int LePi::LeptonReadFrame()
     uint16_t resets{0};
     uint16_t resetsToReboot{0};
     int16_t num_segments{static_cast<int16_t>(config_.segments_per_frame)};
-    for(int16_t segment = 0; segment < num_segments; ++segment)
-    {
+    for (int16_t segment = 0; segment < num_segments; ++segment) {
         // Check if reset SPI connection is required
-        if(resets > kMaxResetsPerFrame) {
+        if (resets > kMaxResetsPerFrame) {
             resets = 0;
             segment = -1;
             LeptonResync(resetsToReboot);
@@ -284,7 +278,7 @@ int LePi::LeptonReadFrame()
         }
 
         // Read segment
-        uint8_t* data_buffer = buffer + segment * config_.segment_size;
+        uint8_t *data_buffer = buffer + segment * config_.segment_size;
         int segment_num_resets = LeptonReadSegment(kMaxResetsPerSegment, data_buffer);
         if (segment_num_resets == kMaxResetsPerSegment) {
             segment = -1;
@@ -316,7 +310,7 @@ void LePi::LeptonResync(uint16_t &resetsToReboot) {
             throw std::runtime_error("Unable to reboot sensor.");
         }
     }
-    // Re-sync be connection reset
+        // Re-sync be connection reset
     else {
         ++resetsToReboot;
         if (!ResetSPIConnection()) {
@@ -326,8 +320,7 @@ void LePi::LeptonResync(uint16_t &resetsToReboot) {
 }
 
 // Lepton get IR frame from sensor
-bool LePi::GetFrame(void *frame, LeptonFrameType type)
-{
+bool LePi::GetFrame(void *frame, LeptonFrameType type) {
 
     // Force reboot if user signaled one
     if (force_reboot_ == true) {
@@ -344,11 +337,9 @@ bool LePi::GetFrame(void *frame, LeptonFrameType type)
     // Convert Lepton frame to IR frame
     if (type == FRAME_U8) {
         LeptonUnpackFrame8(static_cast<uint8_t *>(frame));
-    }
-    else if (type == FRAME_U16) {
+    } else if (type == FRAME_U16) {
         LeptonUnpackFrame16(static_cast<uint16_t *>(frame));
-    }
-    else {
+    } else {
         std::cerr << "Unknown frame type." << std::endl;
         return false;
     }
@@ -359,46 +350,38 @@ bool LePi::GetFrame(void *frame, LeptonFrameType type)
 
 
 // Lepton I2C command
-bool LePi::SendCommand(LeptonI2CCmd cmd, void* buffer)
-{
+bool LePi::SendCommand(LeptonI2CCmd cmd, void *buffer) {
     // Run FFC
     bool result{false};
     switch (cmd) {
-        case RESET:
-        {
+        case RESET: {
             result = ResetConnection();
             break;
         }
-        case REBOOT:
-        {
+        case REBOOT: {
             result = true;
             force_reboot_ = true;
             break;
         }
-        case FFC:
-        {
+        case FFC: {
             result = leptonI2C_FFC();
             break;
         }
-        case SENSOR_TEMP_K:
-        {
+        case SENSOR_TEMP_K: {
             auto frame_int = static_cast<unsigned int *>(buffer);
             frame_int[0] = leptonI2C_InternalTemp();
             result = frame_int[0] != 0;
             break;
         }
-        case SHUTTER_OPEN:
-        {
+        case SHUTTER_OPEN: {
             result = leptonI2C_ShutterOpen();
             break;
         }
-        case SHUTTER_CLOSE:
-        {
+        case SHUTTER_CLOSE: {
             result = leptonI2C_ShutterClose();
             break;
         }
-        default:
-        {
+        default: {
             std::cerr << "Unknown I2C command." << std::endl;
             result = false;
             break;
