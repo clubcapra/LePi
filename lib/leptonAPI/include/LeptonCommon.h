@@ -99,7 +99,7 @@ struct LeptonCameraConfig {
             segments_per_frame = 4;
             segment_number_packet_index = 20;
             reset_wait_time = 1000;
-            spi_speed = 32000000; //32MHz
+            spi_speed = 18000000; //18MHz
             width = 160;
             height = 120;
         }

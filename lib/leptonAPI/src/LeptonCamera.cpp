@@ -116,7 +116,7 @@ void LeptonCamera::run() {
     }
 }
 
-void LeptonCamera::getFrameU8(std::vector<uint8_t>& frame) {
+void LeptonCamera::getFrameU8(std::vector <uint8_t> &frame) {
 
     // Resize output frame
     frame.resize(frame_to_read_.size());
@@ -127,7 +127,7 @@ void LeptonCamera::getFrameU8(std::vector<uint8_t>& frame) {
     // Find frame min and max
     uint16_t minValue = 65535;
     uint16_t maxValue = 0;
-    for(size_t i = 0; i < frame_to_read_.size(); i++) {
+    for (size_t i = 0; i < frame_to_read_.size(); i++) {
         if (frame_to_read_[i] > maxValue) {
             maxValue = frame_to_read_[i];
         }
@@ -137,7 +137,7 @@ void LeptonCamera::getFrameU8(std::vector<uint8_t>& frame) {
     }
     // Scale frame range and copy to output
     float scale = 255.f / static_cast<float>(maxValue - minValue);
-    for(size_t i = 0; i < frame_to_read_.size(); i++) {
+    for (size_t i = 0; i < frame_to_read_.size(); i++) {
         frame[i] = static_cast<uint8_t>((frame_to_read_[i] - minValue) * scale);
     }
     has_frame_ = false;
@@ -146,7 +146,7 @@ void LeptonCamera::getFrameU8(std::vector<uint8_t>& frame) {
     lock_.unlock();
 }
 
-void LeptonCamera::getFrameU16(std::vector<uint16_t>& frame) {
+void LeptonCamera::getFrameU16(std::vector <uint16_t> &frame) {
     // Lock resources
     lock_.lock();
 
@@ -156,7 +156,7 @@ void LeptonCamera::getFrameU16(std::vector<uint16_t>& frame) {
     // Release resources
     lock_.unlock();
 }
-   
-bool LeptonCamera::sendCommand(LeptonI2CCmd cmd, void* buffer) {
+
+bool LeptonCamera::sendCommand(LeptonI2CCmd cmd, void *buffer) {
     return lePi_.SendCommand(cmd, buffer);
 }

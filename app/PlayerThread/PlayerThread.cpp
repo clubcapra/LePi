@@ -32,11 +32,15 @@
 // Third party
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 // C/C++
 #include <iostream>
 #include <unistd.h>
 #include <chrono>
+
+
+using namespace cv;
 
 /**
  * @brief Sample app for streaming IR videos using LePi parallel interface
@@ -49,8 +53,10 @@ int main()
     
     // Define frame
     std::vector<uint8_t> frame(cam.width() * cam.height());
-    cv::Mat img(cam.height(), cam.width(), CV_8UC1, frame.data());
-    
+    Mat img_gray(cam.height(), cam.width(), CV_8UC1, frame.data());
+    Mat img_rgb(cam.height(), cam.width(), CV_8UC3);
+
+    //applyColorMap(img_gray, img_rgb, COLORMAP_JET);
     // Stream frames
     int frame_nb{0};
     auto start_time = std::chrono::system_clock::now();
@@ -59,12 +65,13 @@ int main()
         // Frame request
         if (cam.hasFrame()) {
             cam.getFrameU8(frame);
+            applyColorMap(img_gray, img_rgb, COLORMAP_JET); // Add color mapping to the grayscale image.
             ++frame_nb;
         }
         
         // Display
-        cv::imshow("Lepton", img);
-        int key = cv::waitKey(10);
+        imshow("Lepton", img_rgb);
+        int key = waitKey(10);
         if (key == 27) { // Press Esc to exit
             break;
         }
